@@ -1,7 +1,7 @@
 import React from "react";
 import Customer from "./components/Customer";
-import CustomerAdd from "./components/CustomerAdd";
 import "./App.css";
+import CustomerAdd from "./components/CustomerAdd";
 
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
@@ -103,19 +103,28 @@ class App extends React.Component {
     super(props);
     this.state = {
       customers: "",
-      completed: 0
+      completed: 0,
+      searchKeyword: ""
     };
     this.stateRefresh = this.stateRefresh.bind(this);
+    this.handleValueChange = this.handleValueChange.bind(this);
   }
   stateRefresh() {
     this.setState({
       customers: "",
-      completed: 0
+      completed: 0,
+      searchKeyword: ""
     });
 
     this.callApi()
       .then(res => this.setState({ customers: res }))
       .catch(err => console.log(err));
+  }
+
+  handleValueChange(e) {
+    let nextState = {};
+    nextState[e.target.name] = e.target.value;
+    this.setState(nextState);
   }
 
   componentDidMount() {
@@ -141,12 +150,31 @@ class App extends React.Component {
   };
 
   render() {
+    const filteredComponents = data => {
+      data = data.filter(c => {
+        return c.name.indexOf(this.state.searchKeyword) > -1;
+      });
+      return data.map(c => {
+        return (
+          <Customer
+            stateRefresh={this.stateRefresh}
+            key={c.id}
+            id={c.id}
+            image={c.image}
+            name={c.name}
+            birthday={c.birthday}
+            gender={c.gender}
+            job={c.job}
+          />
+        );
+      });
+    };
     const { classes } = this.props;
     const cellList = [
-      "순서",
-      "사진 이미지",
+      "번호",
+      "프로필 이미지",
       "이름",
-      "생일",
+      "생년월일",
       "성별",
       "직업",
       "설정"
@@ -176,11 +204,14 @@ class App extends React.Component {
                 <SearchIcon />
               </div>
               <InputBase
-                placeholder="검색"
+                placeholder="검색하기"
                 classes={{
                   root: classes.inputRoot,
                   input: classes.inputInput
                 }}
+                name="searchKeyword"
+                value={this.state.searchKeyword}
+                onChange={this.handleValueChange}
               />
             </div>
           </Toolbar>
@@ -203,20 +234,7 @@ class App extends React.Component {
             </TableHead>
             <TableBody>
               {this.state.customers ? (
-                this.state.customers.map((c, index) => {
-                  return (
-                    <Customer
-                      stateRefresh={this.stateRefresh}
-                      id={c.id}
-                      key={index}
-                      image={c.image}
-                      name={c.name}
-                      birthday={c.birthday}
-                      gender={c.gender}
-                      job={c.job}
-                    />
-                  );
-                })
+                filteredComponents(this.state.customers)
               ) : (
                 <TableRow>
                   <TableCell colSpan="6" align="center">
