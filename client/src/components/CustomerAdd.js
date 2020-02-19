@@ -102,7 +102,7 @@ class CustomerAdd extends React.Component {
           color="primary"
           onClick={this.handleClickOpen}
         >
-          고객 추가하기
+          고객 추가
         </Button>
 
         <Dialog open={this.state.open} onClose={this.handleClose}>
